@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CU Campus Safety — Emergency Response Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --g-deep:#0a1f0f;--g-mid:#1a4a25;--g-accent:#2d7a3f;
+  --gold:#c9a84c;--gold-lt:#e8c96a;--cream:#f5ead8;
+  --cdim:rgba(245,234,216,.58);--cfaint:rgba(245,234,216,.09);
+  --correct:#4caf7d;--wrong:#e05c5c;--r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--g-deep);color:var(--cream);min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -5%,rgba(45,122,63,.22) 0,transparent 68%);pointer-events:none;z-index:0}
+.wrap{max-width:580px;margin:0 auto;padding:32px 20px 64px;position:relative;z-index:1}
+.screen{display:none}.screen.on{display:block}
+.crest{width:60px;height:60px;border:2px solid var(--gold);border-radius:50%;margin:0 auto 22px;display:flex;align-items:center;justify-content:center}
+.crest svg{width:26px;height:26px;fill:var(--gold)}
+.rule{width:40px;height:2px;background:var(--gold);margin:0 auto;opacity:.55}
+.tag{display:inline-flex;align-items:center;gap:6px;background:var(--cfaint);border:1px solid rgba(201,168,76,.25);border-radius:99px;padding:4px 14px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.09em;color:var(--gold);text-transform:uppercase}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--gold)}
+.btn-gold{background:var(--gold);color:var(--g-deep);border:none;border-radius:8px;padding:13px 36px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background .18s,transform .12s}
+.btn-gold:hover{background:var(--gold-lt);transform:translateY(-1px)}
+.btn-gold:active{transform:translateY(0)}
+.btn-gold:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.btn-outline{background:transparent;color:var(--cdim);border:1px solid rgba(245,234,216,.2);border-radius:8px;padding:12px 24px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;transition:border-color .18s,color .18s}
+.btn-outline:hover{border-color:var(--cdim);color:var(--cream)}
+.btn-sm{background:transparent;color:var(--cdim);border:1px solid rgba(245,234,216,.15);border-radius:6px;padding:7px 16px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .15s}
+.btn-sm:hover{border-color:var(--gold);color:var(--gold)}
+#s-intro{text-align:center}
+h1.title{font-family:'Playfair Display',serif;font-size:clamp(26px,5vw,38px);font-weight:700;line-height:1.15;margin-bottom:6px}
+h1.title em{font-style:normal;color:var(--gold)}
+.subtitle{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--cdim);margin-bottom:22px;font-family:'DM Mono',monospace}
+.intro-desc{font-size:14px;line-height:1.7;color:var(--cdim);max-width:400px;margin:18px auto 30px}
+.stats{display:flex;justify-content:center;gap:40px;margin-bottom:32px}
+.stat-n{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;color:var(--gold);line-height:1}
+.stat-l{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--cdim);margin-top:3px;font-family:'DM Mono',monospace}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:26px}
+.mode{background:var(--cfaint);border:1px solid rgba(245,234,216,.1);border-radius:var(--r);padding:16px 12px;cursor:pointer;text-align:left;transition:border-color .18s,background .18s}
+.mode:hover{border-color:rgba(201,168,76,.35)}
+.mode.sel{border-color:var(--gold);background:rgba(201,168,76,.1)}
+.mode-icon{font-size:18px;margin-bottom:8px}
+.mode-name{font-size:13px;font-weight:600;color:var(--cream);margin-bottom:3px}
+.mode-desc{font-size:11px;color:var(--cdim);line-height:1.45}
+.intro-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.qhdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.qhdr-logo{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;color:var(--gold)}
+.qhdr-prog{font-family:'DM Mono',monospace;font-size:12px;color:var(--cdim)}
+.qhdr-prog strong{color:var(--gold);font-weight:normal}
+.prog-bg{height:3px;background:rgba(255,255,255,.07);border-radius:99px;margin-bottom:26px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--g-accent),var(--gold));border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.q-type{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.q-type::after{content:'';flex:1;height:1px;background:rgba(201,168,76,.2)}
+.q-text{font-family:'Playfair Display',serif;font-size:clamp(17px,3vw,22px);line-height:1.4;color:var(--cream);margin-bottom:22px}
+.q-scene{background:var(--cfaint);border-left:3px solid var(--gold);padding:13px 18px;margin-bottom:20px;font-size:13px;line-height:1.65;color:var(--cdim);font-style:italic}
+.opts{display:flex;flex-direction:column;gap:9px;margin-bottom:20px}
+.opt{background:var(--cfaint);border:1px solid rgba(245,234,216,.1);border-radius:var(--r);padding:14px 18px;cursor:pointer;display:flex;align-items:flex-start;gap:12px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;text-align:left;width:100%;transition:border-color .15s,transform .12s}
+.opt:hover:not(:disabled){border-color:rgba(201,168,76,.45);transform:translateX(3px)}
+.opt:disabled{cursor:default}
+.opt-l{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--cdim);flex-shrink:0;margin-top:1px}
+.opt.ok{background:rgba(76,175,125,.12);border-color:var(--correct)}
+.opt.ok .opt-l{background:var(--correct);border-color:var(--correct);color:var(--g-deep)}
+.opt.bad{background:rgba(224,92,92,.1);border-color:var(--wrong)}
+.opt.bad .opt-l{background:var(--wrong);border-color:var(--wrong);color:#fff}
+.opt.show-ok{background:rgba(76,175,125,.08);border-color:var(--correct);opacity:.7}
+.opt.show-ok .opt-l{background:var(--correct);border-color:var(--correct);color:var(--g-deep)}
+.fb{border-radius:var(--r);padding:16px 20px;margin-bottom:18px;display:none;font-size:13px;line-height:1.65}
+.fb.on{display:block}
+.fb.ok-fb{background:rgba(76,175,125,.1);border:1px solid rgba(76,175,125,.28)}
+.fb.bad-fb{background:rgba(224,92,92,.08);border:1px solid rgba(224,92,92,.25)}
+.fb-hdr{font-size:13px;font-weight:600;margin-bottom:7px}
+.fb.ok-fb .fb-hdr{color:var(--correct)}.fb.bad-fb .fb-hdr{color:var(--wrong)}
+.fb-body{color:var(--cdim)}.fb-body strong{color:var(--cream);font-weight:500}
+.btn-next{background:transparent;border:1px solid var(--gold);color:var(--gold);border-radius:8px;padding:11px 28px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;display:none;align-items:center;gap:7px;transition:background .18s,color .18s}
+.btn-next.on{display:inline-flex}
+.btn-next:hover{background:var(--gold);color:var(--g-deep)}
+#s-name{text-align:center}
+.name-box{background:var(--cfaint);border:1px solid rgba(245,234,216,.14);border-radius:var(--r);padding:30px 26px;max-width:400px;margin:0 auto 22px}
+.name-box h2{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px}
+.name-box p{font-size:14px;color:var(--cdim);line-height:1.6;margin-bottom:22px}
+.score-preview{display:flex;justify-content:center;gap:28px;margin-bottom:22px}
+.sp-val{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--gold);line-height:1}
+.sp-lbl{font-size:11px;color:var(--cdim);font-family:'DM Mono',monospace;letter-spacing:.07em;text-transform:uppercase;margin-top:2px}
+.name-input{width:100%;background:rgba(245,234,216,.08);border:1px solid rgba(245,234,216,.25);border-radius:8px;padding:14px 18px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:16px;outline:none;margin-bottom:16px;text-align:center}
+.name-input::placeholder{color:rgba(245,234,216,.25)}
+.name-input:focus{border-color:var(--gold)}
+.name-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.save-status{font-family:'DM Mono',monospace;font-size:11px;color:var(--cdim);margin-top:12px;min-height:16px;text-align:center}
+#s-results{text-align:center}
+.ring-wrap{position:relative;width:130px;height:130px;margin:0 auto 26px}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:rgba(255,255,255,.07);stroke-width:8}
+.ring-fg{fill:none;stroke-width:8;stroke-linecap:round;stroke-dasharray:339;stroke-dashoffset:339;transition:stroke-dashoffset 1.1s cubic-bezier(.4,0,.2,1)}
+.ring-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-n{font-family:'Playfair Display',serif;font-size:34px;font-weight:700;line-height:1}
+.ring-d{font-size:12px;color:var(--cdim);margin-top:2px;font-family:'DM Mono',monospace}
+.res-grade{font-family:'Playfair Display',serif;font-size:clamp(24px,4vw,34px);font-weight:700;margin-bottom:8px}
+.res-msg{font-size:14px;color:var(--cdim);line-height:1.65;max-width:360px;margin:0 auto 28px}
+.breakdown{text-align:left;margin-bottom:28px}
+.bd-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.bd-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--cfaint);border-radius:8px;margin-bottom:5px;font-size:13px}
+.bd-inc{color:var(--cream);flex:1}
+.bd-res{font-family:'DM Mono',monospace;font-size:11px}
+.bd-res.p{color:var(--correct)}.bd-res.f{color:var(--wrong)}
+.res-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+#s-board h2{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:18px}
+.board-toprow{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:10px;flex-wrap:wrap}
+.board-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.btab{background:var(--cfaint);border:1px solid rgba(245,234,216,.1);border-radius:99px;padding:5px 14px;font-size:11px;cursor:pointer;color:var(--cdim);font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;transition:all .15s}
+.btab.on{background:rgba(201,168,76,.15);border-color:var(--gold);color:var(--gold)}
+.board-cols{display:grid;grid-template-columns:32px 1fr 60px 52px 68px;gap:8px;padding:0 12px 8px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(245,234,216,.3)}
+.board-row{display:grid;grid-template-columns:32px 1fr 60px 52px 68px;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;margin-bottom:5px;background:var(--cfaint);border:1px solid rgba(245,234,216,.08)}
+.board-row.me{border-color:rgba(201,168,76,.45);background:rgba(201,168,76,.07)}
+.board-row.top1{border-color:rgba(201,168,76,.55);background:rgba(201,168,76,.11)}
+.rank{font-family:'DM Mono',monospace;font-size:12px;color:var(--cdim);text-align:center}
+.rank.gold{color:var(--gold);font-weight:500;font-size:14px}
+.rank.silver{color:#b0bec5;font-weight:500}
+.rank.bronze{color:#a1887f;font-weight:500}
+.bname{font-size:14px;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bscore{font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);text-align:center}
+.bpct{font-family:'DM Mono',monospace;font-size:12px;color:var(--cdim);text-align:center}
+.bdate{font-family:'DM Mono',monospace;font-size:11px;color:rgba(245,234,216,.3);text-align:right}
+.board-empty{text-align:center;padding:40px 20px;color:var(--cdim);font-size:14px;line-height:1.7}
+.board-loading{text-align:center;padding:30px;color:var(--cdim);font-family:'DM Mono',monospace;font-size:12px}
+.board-err{background:rgba(224,92,92,.08);border:1px solid rgba(224,92,92,.25);border-radius:8px;padding:14px;font-size:13px;color:var(--wrong);line-height:1.6;margin-top:8px}
+.board-btns{display:flex;gap:10px;justify-content:center;margin-top:20px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--g-mid);border:1px solid var(--gold);color:var(--cream);padding:10px 22px;border-radius:99px;font-size:13px;font-family:'DM Mono',monospace;z-index:300;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div id="s-intro" class="screen on">
+  <div class="crest"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></div>
+  <h1 class="title">Emergency Response<br><em>Training Quiz</em></h1>
+  <p class="subtitle">CU Campus Safety · Officer Certification</p>
+  <div class="rule" style="margin-bottom:18px"></div>
+  <p class="intro-desc">Test your knowledge of emergency response protocols. Each question covers real incident procedures from CU Campus Safety field cards.</p>
+  <div class="stats">
+    <div><div class="stat-n" id="stat-q">10</div><div class="stat-l">Questions</div></div>
+    <div><div class="stat-n">18</div><div class="stat-l">Incident Types</div></div>
+    <div><div class="stat-n">~5</div><div class="stat-l">Minutes</div></div>
+  </div>
+  <div class="modes">
+    <div class="mode sel" onclick="selMode(this,'standard')"><div class="mode-icon">🎯</div><div class="mode-name">Standard</div><div class="mode-desc">10 questions across all types</div></div>
+    <div class="mode" onclick="selMode(this,'field')"><div class="mode-icon">🚨</div><div class="mode-name">Field</div><div class="mode-desc">On-scene officer decisions</div></div>
+    <div class="mode" onclick="selMode(this,'dispatch')"><div class="mode-icon">📻</div><div class="mode-name">Dispatch</div><div class="mode-desc">Dispatcher protocol questions</div></div>
+  </div>
+  <div class="intro-btns">
+    <button class="btn-gold" id="btn-start">Begin Assessment</button>
+    <button class="btn-outline" onclick="openBoard()">Leaderboard</button>
+  </div>
+</div>
+
+<div id="s-quiz" class="screen">
+  <div class="qhdr">
+    <div class="qhdr-logo">CU Campus Safety</div>
+    <div class="qhdr-prog">Q <strong id="qn">1</strong> / <strong id="qt">10</strong></div>
+  </div>
+  <div class="prog-bg"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+  <div><span class="tag"><span class="dot"></span><span id="q-inc"></span></span></div>
+  <div class="q-type" id="q-type" style="margin-top:14px"></div>
+  <div class="q-text" id="q-text"></div>
+  <div class="q-scene" id="q-scene" style="display:none"></div>
+  <div class="opts" id="opts"></div>
+  <div class="fb" id="fb"><div class="fb-hdr" id="fb-hdr"></div><div class="fb-body" id="fb-body"></div></div>
+  <button class="btn-next" id="btn-next" onclick="nextQ()">Next <span style="font-size:13px">›</span></button>
+</div>
+
+<div id="s-name" class="screen">
+  <div class="name-box">
+    <h2>Assessment Complete</h2>
+    <p>Enter your name to save your score to the leaderboard.</p>
+    <div class="score-preview">
+      <div><div class="sp-val" id="sp-score">0</div><div class="sp-lbl">Score</div></div>
+      <div><div class="sp-val" id="sp-pct">0%</div><div class="sp-lbl">Accuracy</div></div>
+      <div><div class="sp-val" id="sp-grade">—</div><div class="sp-lbl">Grade</div></div>
+    </div>
+    <input class="name-input" id="player-name" type="text" maxlength="30" placeholder="Your name" autocomplete="off">
+    <div class="name-btns">
+      <button class="btn-gold" id="btn-save" onclick="saveScore()">Save to Leaderboard</button>
+      <button class="btn-outline" onclick="skipSave()">Skip</button>
+    </div>
+    <div class="save-status" id="save-status"></div>
+  </div>
+</div>
+
+<div id="s-results" class="screen">
+  <div class="ring-wrap">
+    <svg width="130" height="130" viewBox="0 0 130 130">
+      <circle class="ring-bg" cx="65" cy="65" r="54"/>
+      <circle class="ring-fg" id="ring" cx="65" cy="65" r="54"/>
+    </svg>
+    <div class="ring-inner">
+      <div class="ring-n" id="r-score">0</div>
+      <div class="ring-d" id="r-denom">/10</div>
+    </div>
+  </div>
+  <div class="res-grade" id="r-grade"></div>
+  <p class="res-msg" id="r-msg"></p>
+  <div class="breakdown"><div class="bd-title">Question Breakdown</div><div id="bd-list"></div></div>
+  <div class="res-btns">
+    <button class="btn-gold" onclick="restart()">Try Again</button>
+    <button class="btn-outline" onclick="openBoard()">Leaderboard</button>
+    <button class="btn-outline" onclick="go('s-intro')">Change Mode</button>
+  </div>
+</div>
+
+<div id="s-board" class="screen">
+  <div class="board-toprow">
+    <h2>Leaderboard</h2>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn-sm" onclick="loadBoard()">↻ Refresh</button>
+      <button class="btn-outline" style="padding:7px 16px;font-size:13px" onclick="go('s-intro')">← Back</button>
+    </div>
+  </div>
+  <div class="board-tabs">
+    <div class="btab on" onclick="switchTab(this,'all')">All Time</div>
+    <div class="btab" onclick="switchTab(this,'standard')">Standard</div>
+    <div class="btab" onclick="switchTab(this,'field')">Field</div>
+    <div class="btab" onclick="switchTab(this,'dispatch')">Dispatch</div>
+  </div>
+  <div class="board-cols">
+    <div></div><div>Name</div><div style="text-align:center">Score</div><div style="text-align:center">Pct</div><div style="text-align:right">Date</div>
+  </div>
+  <div id="board-list"></div>
+  <div class="board-btns"><button class="btn-sm" onclick="clearLocal()">Clear Local Cache</button></div>
+</div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+const SHEET_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
+// ─────────────────────────────────────────────────────────────────────────────
+
+const LS_KEY = 'cu_quiz_v1';
+let lastPlayer='', boardTab='all', allScores=[], mode='standard';
+let queue=[], cur=0, score=0, answered=false, results=[];
+
+const hasSheet = () => SHEET_URL.startsWith('https://script.google.com');
+const go = id => { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); document.getElementById(id).classList.add('on'); window.scrollTo(0,0); };
+const toast = (msg,dur=2800) => { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),dur); };
+const getLocal = () => { try{return JSON.parse(localStorage.getItem(LS_KEY))||[];}catch(e){return[];} };
+const setLocal = arr => localStorage.setItem(LS_KEY, JSON.stringify(arr));
+const shuffle  = a => { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; };
+
+function clearLocal() {
+  if(!confirm('Clear local score cache?')) return;
+  localStorage.removeItem(LS_KEY); allScores=[]; renderScores([]); toast('Local cache cleared.');
+}
+
+const GRADES = [
+  {t:90,g:'Outstanding',    m:'Exceptional performance. Command-level knowledge of emergency response protocols.'},
+  {t:80,g:'Proficient',     m:'Strong performance. Well-prepared for field deployment with minor areas to review.'},
+  {t:70,g:'Satisfactory',   m:'Acceptable performance. Review missed questions and retake before certification.'},
+  {t:60,g:'Needs Review',   m:'Additional study required. Focus on the incident types you missed.'},
+  {t:0, g:'Unsatisfactory', m:'Please thoroughly review all emergency response protocols before retaking.'},
+];
+const gradeFor = pct => GRADES.find(g => pct >= g.t);
+
+const QS = [
+  {type:'field',incident:'Assault',q:'You arrive at an assault scene. The suspect may still be present and armed. What is your FIRST action?',scene:'Dispatch reports a physical altercation near the science building. You are first on scene.',opts:['Enter immediately to render aid to the victim','Confirm scene is safe — do not enter if weapon present or suspect uncontrolled','Call backup while driving to a different location','Establish perimeter and wait for PPD without doing anything else'],ans:1,fb:'<strong>Scene safety is always the first priority.</strong> Never enter if a weapon is present or the suspect is uncontrolled. Once safe, render aid and radio dispatch with location and injury status.'},
+  {type:'field',incident:'Assault',q:'The assault suspect has fled on foot. What should you do?',opts:['Immediately pursue the suspect alone on foot','Do nothing — your job ends when the suspect leaves campus','Note direction, description, and vehicle. Relay to dispatch. Do not pursue alone.','Call the victim\'s family before radioing dispatch'],ans:2,fb:'<strong>Never pursue alone.</strong> Call for backup first. Note direction, physical description, and any vehicle, then relay to dispatch.'},
+  {type:'field',incident:'Fire Emergency',q:'You discover smoke coming from a residence hall. What are your first two immediate actions?',opts:['Call the Director, then investigate the source','Activate the nearest fire alarm and call Vol. Fire 265-3311','Evacuate only the affected floor, then investigate','Use the nearest extinguisher before calling anyone'],ans:1,fb:'<strong>Activate the alarm first</strong> to trigger mass evacuation, then call Vol. Fire at 265-3311. Do not investigate before activating.'},
+  {type:'field',incident:'Fire Emergency',q:'People may be trapped inside a burning building. What is the correct action?',opts:['Enter immediately — lives are more important than protocol','Relay the information to fire dispatch immediately. Do not enter.','Wait until fire department arrives before reporting trapped persons','Enter only if you have a fire extinguisher'],ans:1,fb:'<strong>Do not enter the building under any circumstances.</strong> Relay information about trapped persons to fire dispatch immediately.'},
+  {type:'field',incident:'Medical Emergency',q:'You find an unconscious student with no pulse who is not breathing. What do you do?',opts:['Wait for EMS to arrive before touching the victim','Call the student\'s RA first, then call EMS','Start CPR if trained and use AED if available. Call EMS immediately.','Move the victim to a comfortable position and monitor'],ans:2,fb:'Every minute without CPR reduces survival by 7–10%. <strong>Start CPR immediately if trained</strong> and locate the nearest AED. Call Vol. Rescue at 265-2121.'},
+  {type:'field',incident:'Bomb Threat',q:'You receive a phone call reporting a bomb. The caller is still on the line. What is the priority?',opts:['Hang up and immediately call PPD','Keep the caller talking and use the dispatcher checklist on the back of your card','Evacuate the building before doing anything else','Ask the caller to hold and conference in your supervisor'],ans:1,fb:'When the caller is on the line, <strong>keep them talking.</strong> Use the Bomb Threat checklist to gather: when, where, what it looks like, why they placed it.'},
+  {type:'field',incident:'Bomb Threat',q:'You spot a suspicious unattended package in a hallway. What do you do?',opts:['Move it outside where it can cause less damage','Open it to check if it\'s actually dangerous','Do not touch it. Evacuate 300 ft and call PPD immediately.','Call maintenance to have it removed'],ans:2,fb:'<strong>Never touch or move a suspicious package.</strong> Establish a 300+ foot perimeter and call PPD at 265-2121. Do not use your radio in close proximity.'},
+  {type:'field',incident:'Intoxicated Student',q:'You find an intoxicated student who is unresponsive and vomiting. What is the immediate action?',opts:['Place them in their room and check back in 30 minutes','Call their RA and wait outside','Call EMS immediately — Vol. Rescue 265-2121. Place in recovery position.','Administer water and monitor for 10 minutes'],ans:2,fb:'An unresponsive vomiting student faces serious aspiration risk. <strong>Call EMS immediately</strong> and place them in the recovery position. Do not leave them alone.'},
+  {type:'field',incident:'Sexual Assault',q:'A student reports they were sexually assaulted and does not want police notified. What should you do?',opts:['Call PPD anyway — it is required procedure','Respect their wishes completely and take no further action','Get them to safety, encourage hospital/Student Health, notify S&S Director and Counseling Center','Only document the report and file it the next business day'],ans:2,fb:'<strong>Police contact is the victim\'s choice.</strong> Priority: safe location → hospital or Student Health immediately (STD/HIV/pregnancy risk) → notify S&S Director → Counseling Center.'},
+  {type:'field',incident:'Missing Person',q:'A student is reported missing. What is the first thing to check before launching a full search?',opts:['Contact the student\'s parents immediately','Check card access history — dorm, vending, laundry machines','File a formal missing persons report with PPD','Search every building on campus systematically'],ans:1,fb:'<strong>Card access logs are fast and reliable.</strong> Dorm access, vending, and laundry swipes can confirm campus presence or narrow the last known location.'},
+  {type:'field',incident:'Maintenance Emergency',q:'You smell gas near the engineering building. What is your immediate action?',opts:['Locate the source before calling anyone','Call maintenance only — they handle all gas issues','Evacuate immediately, call CU Maintenance 265-6439 and St. Lawrence Gas 315-769-3516','Open windows to ventilate and monitor the situation'],ans:2,fb:'<strong>Do not locate the source — evacuate immediately.</strong> Call CU Emergency Maintenance at 265-6439 AND St. Lawrence Gas at 315-769-3516.'},
+  {type:'field',incident:'Motor Vehicle Accident',q:'There is a fuel spill and a passenger is injured. What is the first call?',opts:['CU Maintenance to clean up the fuel spill','Vol. Fire 265-3311 for the hazard AND Vol. Rescue 265-2121 for the injury — simultaneously','PPD only — they will coordinate everything else','Director, to report the incident'],ans:1,fb:'A fuel spill with injury requires <strong>two simultaneous calls:</strong> Vol. Fire at 265-3311 for the hazard, and Vol. Rescue at 265-2121 for the injury.'},
+  {type:'dispatch',incident:'Assault',q:'A caller reports an assault in progress. After confirming location, what is the most critical next piece of information?',opts:['The caller\'s student ID number','Whether any weapons are involved','The victim\'s academic department','How long the caller has been at Clarkson'],ans:1,fb:'<strong>Weapons change everything</strong> about the response — whether PPD must be notified immediately, whether officers should approach, and what backup is needed.'},
+  {type:'dispatch',incident:'Bomb Threat',q:'You receive a bomb threat call. Which of these is NOT on the dispatcher checklist?',opts:['When is the bomb going to explode?','What does the bomb look like?','What is the caller\'s student GPA?','Did you place the bomb? Why?'],ans:2,fb:'The checklist covers: detonation time, location, appearance, type, trigger, motivation, name, exact wording, caller demographics, and originating number.'},
+  {type:'dispatch',incident:'Missing Person',q:'A parent calls to report their child missing, last seen 6 hours ago. Who do you notify first?',opts:['PPD immediately — 6 hours means it\'s a police matter','Media Relations to issue a campus alert','Safety & Security officers to assist, and the Director','The student\'s academic advisor'],ans:2,fb:'<strong>Safety & Security and the Director are the first internal notifications.</strong> Card access checks and canvassing happen first. PPD is called if not located quickly.'},
+  {type:'dispatch',incident:'Intoxicated Student',q:'An intoxicated student is confirmed to be underage. Who must be notified beyond the standard response?',opts:['The student\'s parents, immediately by phone','Assoc. Dean of Residential Life','The Provost\'s office','Campus media and the student newspaper'],ans:1,fb:'For an <strong>underage intoxicated student</strong>, the notification chain adds Assoc. Dean of Residential Life on top of the standard response.'},
+  {type:'dispatch',incident:'Sexual Assault',q:'A sexual assault is reported. The checklist notes an urgent time-sensitive medical concern. What is it?',opts:['Possible broken bones requiring immediate X-ray','Risk of exposure to STDs, HIV, and/or pregnancy','Potential head trauma from the assault','Risk of the victim leaving campus before a report is filed'],ans:1,fb:'The cards flag <strong>STD, HIV, and pregnancy risk</strong> as time-sensitive — requiring immediate hospital or Student Health visit.'},
+  {type:'dispatch',incident:'Student Death',q:'A student death has occurred. Roommates are asking you directly what happened. What is the correct response?',opts:['Briefly explain the situation so they can process it','Refer them to the student\'s family','Do not notify roommates or floor mates until after the family has been contacted','Provide a written statement and ask them to keep it private'],ans:2,fb:'<strong>Family must always be notified first.</strong> Roommates should not be informed until after the family is contacted. All media goes exclusively to Media Relations.'},
+  {type:'dispatch',incident:'Fire Emergency',q:'A caller reports a fire. After confirming location, what is the second most important question?',opts:['Are there any pets in the building?','Is anyone trapped, and are there any injuries?','How old is the building?','Has the caller called their RA?'],ans:1,fb:'<strong>Trapped persons and injuries</strong> change the fire department\'s response priority. Sequence: location → trapped/injuries → what is burning → hazardous materials.'},
+  {type:'dispatch',incident:'Poisoning',q:'A student has ingested an unknown substance and is conscious. What is the critical instruction to the caller?',opts:['Have the student drink large amounts of water immediately','Induce vomiting to remove the substance','Do not induce vomiting. Keep the victim calm and preserve the container.','Have the student walk around to stay awake'],ans:2,fb:'<strong>Never induce vomiting unless directed by Poison Control or EMS.</strong> Keep the victim calm. Preserve the container so EMS can identify the toxin.'},
+];
+
+function selMode(el,m) { document.querySelectorAll('.mode').forEach(x=>x.classList.remove('sel')); el.classList.add('sel'); mode=m; document.getElementById('stat-q').textContent=m==='standard'?10:8; }
+
+function startQuiz() {
+  let pool = mode==='field' ? QS.filter(q=>q.type==='field') : mode==='dispatch' ? QS.filter(q=>q.type==='dispatch') : QS;
+  queue=shuffle(pool).slice(0,mode==='standard'?10:8); cur=0; score=0; results=[];
+  document.getElementById('qt').textContent=queue.length;
+  go('s-quiz'); renderQ();
+}
+document.getElementById('btn-start').addEventListener('click', startQuiz);
+
+function renderQ() {
+  answered=false;
+  const q=queue[cur];
+  document.getElementById('qn').textContent=cur+1;
+  document.getElementById('q-inc').textContent=q.incident;
+  document.getElementById('q-type').textContent=q.type==='field'?'⚡ Field Response':'📻 Dispatcher Protocol';
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('prog').style.width=(cur/queue.length*100)+'%';
+  const sc=document.getElementById('q-scene');
+  if(q.scene){sc.textContent=q.scene;sc.style.display='block';}else sc.style.display='none';
+  const letters=['A','B','C','D'];
+  const idxs=shuffle([0,1,2,3].slice(0,q.opts.length));
+  const corrShuf=idxs.indexOf(q.ans);
+  const ol=document.getElementById('opts'); ol.innerHTML='';
+  idxs.forEach((orig,i)=>{
+    const b=document.createElement('button'); b.className='opt';
+    b.onclick=()=>pick(b,i===corrShuf,q);
+    b.innerHTML=`<span class="opt-l">${letters[i]}</span><span>${q.opts[orig]}</span>`;
+    ol.appendChild(b);
+  });
+  document.getElementById('fb').className='fb';
+  const bn=document.getElementById('btn-next'); bn.className='btn-next';
+  bn.innerHTML='Next <span style="font-size:13px">›</span>';
+}
+
+function pick(btn,correct,q) {
+  if(answered) return; answered=true;
+  document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+  if(correct){ btn.classList.add('ok'); score++; results.push({incident:q.incident,ok:true}); showFb(true,q.fb); }
+  else {
+    btn.classList.add('bad'); results.push({incident:q.incident,ok:false});
+    document.querySelectorAll('.opt').forEach(b=>{ if(b.querySelector('span:last-child').textContent===q.opts[q.ans]) b.classList.add('show-ok'); });
+    showFb(false,q.fb);
+  }
+  const bn=document.getElementById('btn-next'); bn.className='btn-next on';
+  bn.innerHTML=(cur+1>=queue.length?'See Results':'Next')+' <span style="font-size:13px">›</span>';
+}
+
+function showFb(ok,text) {
+  const fb=document.getElementById('fb'); fb.className='fb on '+(ok?'ok-fb':'bad-fb');
+  document.getElementById('fb-hdr').textContent=ok?'✓  Correct':'✗  Incorrect';
+  document.getElementById('fb-body').innerHTML=text;
+}
+
+function nextQ(){ cur++; cur>=queue.length ? showNameEntry() : renderQ(); }
+
+function showNameEntry() {
+  const total=queue.length, pct=Math.round(score/total*100), g=gradeFor(pct);
+  document.getElementById('sp-score').textContent=score+'/'+total;
+  document.getElementById('sp-pct').textContent=pct+'%';
+  document.getElementById('sp-grade').textContent=g.g;
+  document.getElementById('player-name').value=lastPlayer||'';
+  document.getElementById('save-status').textContent='';
+  go('s-name');
+  setTimeout(()=>document.getElementById('player-name').focus(),300);
+}
+
+document.getElementById('player-name').addEventListener('keydown', e=>{ if(e.key==='Enter') saveScore(); });
+
+async function saveScore() {
+  const name=document.getElementById('player-name').value.trim();
+  if(!name){ document.getElementById('player-name').focus(); return; }
+  lastPlayer=name;
+  const total=queue.length, pct=Math.round(score/total*100), g=gradeFor(pct);
+  const entry={ name, score, total, pct, mode, grade:g.g, date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}), ts:Date.now() };
+  const btn=document.getElementById('btn-save'), status=document.getElementById('save-status');
+  btn.disabled=true;
+  const local=getLocal(); local.push(entry); setLocal(local);
+  if(hasSheet()) {
+    status.textContent='Saving...';
+    try {
+      await fetch(SHEET_URL,{method:'POST',body:JSON.stringify({name,score,total,pct,mode,grade:g.g})});
+      status.textContent=''; toast('Score saved! 🎉');
+    } catch(e) { status.textContent='Saved locally — sheet unreachable.'; }
+  } else { status.textContent=''; toast('Score saved locally.'); }
+  btn.disabled=false; showResults();
+}
+
+function skipSave(){ showResults(); }
+
+function showResults() {
+  go('s-results');
+  const total=queue.length, pct=score/total, pctR=Math.round(pct*100);
+  const col=pct>=.8?'#4caf7d':pct>=.6?'#c9a84c':'#e05c5c';
+  const ring=document.getElementById('ring'); ring.style.stroke=col;
+  setTimeout(()=>{ ring.style.strokeDashoffset=339*(1-pct); },80);
+  document.getElementById('r-score').textContent=score; document.getElementById('r-score').style.color=col;
+  document.getElementById('r-denom').textContent='/'+total;
+  const g=gradeFor(pctR);
+  document.getElementById('r-grade').textContent=g.g; document.getElementById('r-msg').textContent=g.m;
+  const bdl=document.getElementById('bd-list'); bdl.innerHTML='';
+  results.forEach((r,i)=>{ const d=document.createElement('div'); d.className='bd-row'; d.innerHTML=`<span style="width:16px;text-align:center;color:${r.ok?'#4caf7d':'#e05c5c'}">${r.ok?'✓':'✗'}</span><span class="bd-inc">Q${i+1} — ${r.incident}</span><span class="bd-res ${r.ok?'p':'f'}">${r.ok?'CORRECT':'MISSED'}</span>`; bdl.appendChild(d); });
+}
+
+function restart(){ go('s-intro'); }
+
+async function openBoard(){ go('s-board'); await loadBoard(); }
+
+async function loadBoard() {
+  document.getElementById('board-list').innerHTML='<div class="board-loading">Loading...</div>';
+  let scores=[];
+  if(hasSheet()) {
+    try {
+      const r=await fetch(SHEET_URL); const data=await r.json(); scores=data.scores||[];
+      const local=getLocal(); const keys=new Set(scores.map(s=>s.name+s.score+s.pct));
+      scores=[...scores,...local.filter(s=>!keys.has(s.name+s.score+s.pct))];
+    } catch(e) {
+      scores=getLocal();
+      document.getElementById('board-list').innerHTML=`<div class="board-err">Could not reach Google Sheets. Showing local scores.<br><small>${e.message}</small></div>`;
+      allScores=scores; renderScores(scores); return;
+    }
+  } else { scores=getLocal(); }
+  allScores=scores; renderScores(scores);
+}
+
+function switchTab(el,tab){ document.querySelectorAll('.btab').forEach(x=>x.classList.remove('on')); el.classList.add('on'); boardTab=tab; renderScores(allScores); }
+
+function renderScores(all) {
+  let filtered=boardTab==='all'?[...all]:all.filter(e=>e.mode===boardTab);
+  filtered.sort((a,b)=>(Number(b.pct)||0)-(Number(a.pct)||0)||(Number(b.score)||0)-(Number(a.score)||0));
+  const list=document.getElementById('board-list');
+  if(!filtered.length){ list.innerHTML='<div class="board-empty">No scores yet.<br>Complete a quiz to appear here.</div>'; return; }
+  const sym=['#1','#2','#3'],cls=['gold','silver','bronze'];
+  list.innerHTML='';
+  filtered.slice(0,50).forEach((e,i)=>{
+    const isMe=e.name===lastPlayer&&(Date.now()-(e.ts||0))<180000;
+    const row=document.createElement('div'); row.className='board-row'+(isMe?' me':'')+(i===0?' top1':'');
+    const d=e.date||(e.ts?new Date(e.ts).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'');
+    row.innerHTML=`<div class="rank ${i<3?cls[i]:''}">${i<3?sym[i]:i+1}</div><div class="bname">${e.name}${isMe?' ← you':''}</div><div class="bscore">${e.score}/${e.total}</div><div class="bpct">${e.pct}%</div><div class="bdate">${d}</div>`;
+    list.appendChild(row);
+  });
+}
+</script>
+</body>
+</html>
